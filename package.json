@@ -1,0 +1,23 @@
+{
+  "name": "tailwind-purescript-generator",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate": "postcss static/css/styles.css -o generated/css/styles.css",
+    "test": "spago test"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "postcss-cli": "^8.3.0",
+    "purescript": "^0.13.8",
+    "purty": "^6.3.0",
+    "spago": "^0.17.0"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.1.0",
+    "postcss": "^8.2.1",
+    "tailwindcss": "^2.0.1"
+  }
+}
