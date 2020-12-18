@@ -39,6 +39,8 @@ testModule2 =
       , generate "thin" (FontWeight "100")
       , generate "extralight" (FontWeight "200")
       , generate "light" (FontWeight "300")
+      , generate "0" (Padding "0px")
+      , generate "1" (Padding "0.25rem")
       ]
   }
 

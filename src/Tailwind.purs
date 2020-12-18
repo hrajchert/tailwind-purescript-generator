@@ -13,9 +13,18 @@ type PropertyName
 type UtilityName
   = String
 
+-- Something like: 0.5rem
+type Size
+  = String
+
+-- Something like: 100, 200, 300
+type Weight
+  = String
+
 data Utility
-  = FontSize String String
-  | FontWeight String
+  = FontSize Size Size
+  | FontWeight Weight
+  | Padding Size
 
 generateName :: UtilityName -> PropertyName -> { selector :: String, name :: String }
 generateName utilityName propertyName =
@@ -52,6 +61,21 @@ generate propertyName (FontWeight weight) =
           $ intercalate "\n"
               [ "." <> selector <> " {"
               , "  font-weight: " <> weight <> ";"
+              , "}"
+              ]
+    , selector
+    , name
+    }
+
+generate propertyName (Padding size) =
+  let
+    { selector, name } = generateName "p" propertyName
+  in
+    { description:
+        Just
+          $ intercalate "\n"
+              [ "." <> selector <> " {"
+              , "  padding: " <> size <> ";"
               , "}"
               ]
     , selector
