@@ -1,4 +1,4 @@
-module FsUtils (ensureDir) where
+module Utils.Fs (ensureDir) where
 
 import Prelude
 import Data.Array (dropEnd, length)

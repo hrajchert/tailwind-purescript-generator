@@ -6,14 +6,14 @@ import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import FsUtils (ensureDir)
+import Utils.Fs (ensureDir)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
 import Node.Path (FilePath)
 import Node.Path as FP
 
-type Utility
+type GeneratedUtility
   = { description :: Maybe String
     , selector :: String
     , name :: String
@@ -21,11 +21,11 @@ type Utility
 
 type Module
   = { path :: Array String
-    , utilities :: Array Utility
+    , utilities :: Array GeneratedUtility
     }
 
-generate :: Module -> String
-generate mod = intercalate "\n" (moduleComment <> header <> utilities)
+toPurescriptFile :: Module -> String
+toPurescriptFile mod = intercalate "\n" (moduleComment <> header <> utilities)
   where
   modulePath = intercalate "." mod.path
 
@@ -42,7 +42,7 @@ generate mod = intercalate "\n" (moduleComment <> header <> utilities)
 
   utilities = mod.utilities >>= utility
 
-  utility :: Utility -> Array String
+  utility :: GeneratedUtility -> Array String
   utility { description, selector, name } =
     [ asComment description
     , name <> " :: ClassName"
@@ -55,7 +55,7 @@ generate mod = intercalate "\n" (moduleComment <> header <> utilities)
 
 writeModule :: FilePath -> Module -> Aff Unit
 writeModule basePath mod = do
-  contents <- liftEffect $ Buffer.fromString (generate mod) UTF8
+  contents <- liftEffect $ Buffer.fromString (toPurescriptFile mod) UTF8
   let
     fullPath = FP.concat ([ basePath ] <> mod.path) <> ".purs"
   ensureDir fullPath
