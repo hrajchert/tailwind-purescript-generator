@@ -40,14 +40,11 @@ generate propertyName (FontSize fontSize lineHeight) =
   let
     { selector, name } = generateName "text" propertyName
   in
-    { description:
+    { properties:
         Just
-          $ intercalate "\n"
-              [ "." <> selector <> " {"
-              , "  font-size: " <> fontSize <> ";"
-              , "  line-height: " <> lineHeight <> ";"
-              , "}"
-              ]
+          [ { name: "font-size", value: fontSize }
+          , { name: "line-height", value: lineHeight }
+          ]
     , selector
     , name
     }
@@ -56,13 +53,10 @@ generate propertyName (FontWeight weight) =
   let
     { selector, name } = generateName "font" propertyName
   in
-    { description:
+    { properties:
         Just
-          $ intercalate "\n"
-              [ "." <> selector <> " {"
-              , "  font-weight: " <> weight <> ";"
-              , "}"
-              ]
+          [ { name: "font-weight", value: weight }
+          ]
     , selector
     , name
     }
@@ -71,13 +65,10 @@ generate propertyName (Padding size) =
   let
     { selector, name } = generateName "p" propertyName
   in
-    { description:
+    { properties:
         Just
-          $ intercalate "\n"
-              [ "." <> selector <> " {"
-              , "  padding: " <> size <> ";"
-              , "}"
-              ]
+          [ { name: "padding", value: size }
+          ]
     , selector
     , name
     }

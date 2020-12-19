@@ -1,20 +1,21 @@
 module Generator where
 
 import Prelude
+import Css (Property, prettyPrint)
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Utils.Fs (ensureDir)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
 import Node.Path (FilePath)
 import Node.Path as FP
+import Utils.Fs (ensureDir)
 
 type GeneratedUtility
-  = { description :: Maybe String
+  = { properties :: Maybe (Array Property)
     , selector :: String
     , name :: String
     }
@@ -43,15 +44,13 @@ toPurescriptFile mod = intercalate "\n" (moduleComment <> header <> utilities)
   utilities = mod.utilities >>= utility
 
   utility :: GeneratedUtility -> Array String
-  utility { description, selector, name } =
-    [ asComment description
+  utility { properties, selector, name } =
+    [ asComment $ prettyPrint selector properties
     , name <> " :: ClassName"
     , name <> " = ClassName \"" <> selector <> "\""
     ]
 
-  asComment = case _ of
-    Nothing -> ""
-    Just description -> "\n-- | " <> replaceAll (Pattern "\n") (Replacement "\n-- | ") description
+  asComment description = "\n-- | " <> replaceAll (Pattern "\n") (Replacement "\n-- | ") description
 
 writeModule :: FilePath -> Module -> Aff Unit
 writeModule basePath mod = do
