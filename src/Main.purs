@@ -22,6 +22,7 @@ testModule =
         , generate (FontWeight [ "light" ] "300")
         , generate (Padding [ "0" ] "0px")
         , generate (Padding [ "1" ] "0.25rem")
+        , generate WordBreak
         ]
   }
 

@@ -19,12 +19,17 @@ type Size
 type Weight
   = String
 
--- FIXME almost sure that propertyName (which may need a new name) should be
--- between each Utility, as not all utilities have a """specification"""
+-- FIXME: Check how to name negative identifiers
+--   ex: https://tailwindcss.com/docs/top-right-bottom-left and https://tailwindcss.com/docs/margin
+-- Check weird classes (and negative) like
+--    https://tailwindcss.com/docs/space
+-- Check how to name classes like w-11/12
+--    https://tailwindcss.com/docs/width (also see how to handle min-content and proportions in the same customization)
 data Utility
   = FontSize Identifier Size Size
   | FontWeight Identifier Weight
   | Padding Identifier Size
+  | WordBreak
 
 generate :: Utility -> Array GeneratedUtility
 generate (FontSize identifier fontSize lineHeight) =
@@ -46,9 +51,9 @@ generate (FontWeight identifier weight) =
     }
   ]
 
-generate (Padding identifier size) = generalProperty <> directionalProperties
+generate (Padding identifier size) = generalPadding <> directionalPadding
   where
-  generalProperty =
+  generalPadding =
     [ { properties:
           Just
             [ { name: "padding", value: size }
@@ -57,7 +62,7 @@ generate (Padding identifier size) = generalProperty <> directionalProperties
       }
     ]
 
-  directionalProperties =
+  directionalPadding =
     forAllDirections \directionModifier cssModifiers ->
       { properties:
           ( Just
@@ -68,6 +73,33 @@ generate (Padding identifier size) = generalProperty <> directionalProperties
           )
       , identifier: [ "p", directionModifier ] <> identifier
       }
+
+generate WordBreak = [ breakNormal, breakWords, breakAll ]
+  where
+  breakNormal =
+    { properties:
+        Just
+          [ { name: "overflow-wrap", value: "normal" }
+          , { name: "word-break", value: "normal" }
+          ]
+    , identifier: [ "break", "normal" ]
+    }
+
+  breakWords =
+    { properties:
+        Just
+          [ { name: "overflow-wrap", value: "break-word" }
+          ]
+    , identifier: [ "break", "words" ]
+    }
+
+  breakAll =
+    { properties:
+        Just
+          [ { name: "word-break", value: "break-all" }
+          ]
+    , identifier: [ "break", "all" ]
+    }
 
 forAllDirections :: (String -> Array String -> GeneratedUtility) -> Array GeneratedUtility
 forAllDirections generator =
