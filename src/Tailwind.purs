@@ -3,7 +3,7 @@ module Tailwind where
 import Prelude
 import Data.Maybe (Maybe(..))
 import Generator (GeneratedUtility)
-import Identifiers (fromKebabCase, toKebabCase)
+import Identifiers (Identifier, toKebabCase)
 
 type PropertyName
   = String
@@ -22,38 +22,38 @@ type Weight
 -- FIXME almost sure that propertyName (which may need a new name) should be
 -- between each Utility, as not all utilities have a """specification"""
 data Utility
-  = FontSize Size Size
-  | FontWeight Weight
-  | Padding Size
+  = FontSize Identifier Size Size
+  | FontWeight Identifier Weight
+  | Padding Identifier Size
 
-generate :: PropertyName -> Utility -> Array GeneratedUtility
-generate propertyName (FontSize fontSize lineHeight) =
+generate :: Utility -> Array GeneratedUtility
+generate (FontSize identifier fontSize lineHeight) =
   [ { properties:
         Just
           [ { name: "font-size", value: fontSize }
           , { name: "line-height", value: lineHeight }
           ]
-    , identifier: [ "text" ] <> fromKebabCase propertyName
+    , identifier: [ "text" ] <> identifier
     }
   ]
 
-generate propertyName (FontWeight weight) =
+generate (FontWeight identifier weight) =
   [ { properties:
         Just
           [ { name: "font-weight", value: weight }
           ]
-    , identifier: [ "font" ] <> fromKebabCase propertyName
+    , identifier: [ "font" ] <> identifier
     }
   ]
 
-generate propertyName (Padding size) = generalProperty <> directionalProperties
+generate (Padding identifier size) = generalProperty <> directionalProperties
   where
   generalProperty =
     [ { properties:
           Just
             [ { name: "padding", value: size }
             ]
-      , identifier: [ "p" ] <> fromKebabCase propertyName
+      , identifier: [ "p" ] <> identifier
       }
     ]
 
@@ -66,7 +66,7 @@ generate propertyName (Padding size) = generalProperty <> directionalProperties
                       { name: toKebabCase [ "padding", cssModif ], value: size }
               )
           )
-      , identifier: [ "p", directionModifier ] <> fromKebabCase propertyName
+      , identifier: [ "p", directionModifier ] <> identifier
       }
 
 forAllDirections :: (String -> Array String -> GeneratedUtility) -> Array GeneratedUtility

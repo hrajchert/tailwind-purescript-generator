@@ -14,14 +14,14 @@ testModule =
   { path: [ "Css", "Theme" ]
   , utilities:
       join
-        [ generate "xs" (FontSize "0.75rem" "1rem")
-        , generate "sm" (FontSize "0.875rem" "1.25rem")
-        , generate "base" (FontSize "1rem" "1.5rem")
-        , generate "thin" (FontWeight "100")
-        , generate "extralight" (FontWeight "200")
-        , generate "light" (FontWeight "300")
-        , generate "0" (Padding "0px")
-        , generate "1" (Padding "0.25rem")
+        [ generate (FontSize [ "xs" ] "0.75rem" "1rem")
+        , generate (FontSize [ "sm" ] "0.875rem" "1.25rem")
+        , generate (FontSize [ "base" ] "1rem" "1.5rem")
+        , generate (FontWeight [ "thin" ] "100")
+        , generate (FontWeight [ "extralight" ] "200")
+        , generate (FontWeight [ "light" ] "300")
+        , generate (Padding [ "0" ] "0px")
+        , generate (Padding [ "1" ] "0.25rem")
         ]
   }
 
