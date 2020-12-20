@@ -3,10 +3,11 @@ module Generator where
 import Prelude
 import Css (Property, prettyPrint)
 import Data.Foldable (intercalate)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Identifiers (Identifier, toCamelCase, toKebabCase)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
@@ -16,8 +17,7 @@ import Utils.Fs (ensureDir)
 
 type GeneratedUtility
   = { properties :: Maybe (Array Property)
-    , selector :: String
-    , name :: String
+    , identifier :: Identifier
     }
 
 type Module
@@ -44,11 +44,16 @@ toPurescriptFile mod = intercalate "\n" (moduleComment <> header <> utilities)
   utilities = mod.utilities >>= utility
 
   utility :: GeneratedUtility -> Array String
-  utility { properties, selector, name } =
-    [ asComment $ prettyPrint selector properties
-    , name <> " :: ClassName"
-    , name <> " = ClassName \"" <> selector <> "\""
-    ]
+  utility { properties, identifier } =
+    let
+      selector = toKebabCase identifier
+
+      name = toCamelCase identifier
+    in
+      [ asComment $ prettyPrint selector properties
+      , name <> " :: ClassName"
+      , name <> " = ClassName " <> show selector
+      ]
 
   asComment description = "\n-- | " <> replaceAll (Pattern "\n") (Replacement "\n-- | ") description
 

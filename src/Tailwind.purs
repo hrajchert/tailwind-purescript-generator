@@ -1,12 +1,9 @@
 module Tailwind where
 
 import Prelude
-import Data.Foldable (intercalate)
 import Data.Maybe (Maybe(..))
-import Data.String (Pattern(..), split)
 import Generator (GeneratedUtility)
-import Utils.String (capitalize)
-import Data.Array (uncons)
+import Identifiers (fromKebabCase, toKebabCase)
 
 type PropertyName
   = String
@@ -29,80 +26,48 @@ data Utility
   | FontWeight Weight
   | Padding Size
 
-toParts :: String -> Array String
-toParts = split (Pattern "-")
-
-fromParts :: Array String -> String
-fromParts = intercalate "-"
-
-generateName :: Array String -> { selector :: String, name :: String }
-generateName names =
-  { selector: fromParts names
-  , name:
-      intercalate ""
-        $ case uncons names of
-            Nothing -> [] {- This should never happen, but maybe refactor to NonEmptyArray -}
-            Just { head, tail } -> [ head ] <> (capitalize <$> tail)
-  }
-
 generate :: PropertyName -> Utility -> Array GeneratedUtility
 generate propertyName (FontSize fontSize lineHeight) =
-  let
-    { selector, name } = generateName $ [ "text" ] <> toParts propertyName
-  in
-    [ { properties:
-          Just
-            [ { name: "font-size", value: fontSize }
-            , { name: "line-height", value: lineHeight }
-            ]
-      , selector
-      , name
-      }
-    ]
+  [ { properties:
+        Just
+          [ { name: "font-size", value: fontSize }
+          , { name: "line-height", value: lineHeight }
+          ]
+    , identifier: [ "text" ] <> fromKebabCase propertyName
+    }
+  ]
 
 generate propertyName (FontWeight weight) =
-  let
-    { selector, name } = generateName $ [ "font" ] <> toParts propertyName
-  in
-    [ { properties:
-          Just
-            [ { name: "font-weight", value: weight }
-            ]
-      , selector
-      , name
-      }
-    ]
+  [ { properties:
+        Just
+          [ { name: "font-weight", value: weight }
+          ]
+    , identifier: [ "font" ] <> fromKebabCase propertyName
+    }
+  ]
 
 generate propertyName (Padding size) = generalProperty <> directionalProperties
   where
   generalProperty =
-    let
-      { selector, name } = generateName $ [ "p" ] <> toParts propertyName
-    in
-      [ { properties:
-            Just
-              [ { name: "padding", value: size }
-              ]
-        , selector
-        , name
-        }
-      ]
+    [ { properties:
+          Just
+            [ { name: "padding", value: size }
+            ]
+      , identifier: [ "p" ] <> fromKebabCase propertyName
+      }
+    ]
 
   directionalProperties =
     forAllDirections \directionModifier cssModifiers ->
-      let
-        { selector, name } = generateName $ [ "p", directionModifier ] <> toParts propertyName
-      in
-        { properties:
-            ( Just
-                ( cssModifiers
-                    <#> \cssModif ->
-                        { name: fromParts [ "padding", cssModif ], value: size }
-                )
-            )
-        , selector
-        , name
-        }
+      { properties:
+          ( Just
+              ( cssModifiers
+                  <#> \cssModif ->
+                      { name: toKebabCase [ "padding", cssModif ], value: size }
+              )
+          )
+      , identifier: [ "p", directionModifier ] <> fromKebabCase propertyName
+      }
 
 forAllDirections :: (String -> Array String -> GeneratedUtility) -> Array GeneratedUtility
 forAllDirections generator =
