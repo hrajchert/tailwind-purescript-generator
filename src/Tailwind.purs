@@ -11,6 +11,10 @@ type PropertyName
 type UtilityName
   = String
 
+-- Something like: #f9fafb, #fff, transparent
+type ColorName
+  = String
+
 -- Something like: 0.5rem
 type Size
   = String
@@ -26,12 +30,22 @@ type Weight
 -- Check how to name classes like w-11/12
 --    https://tailwindcss.com/docs/width (also see how to handle min-content and proportions in the same customization)
 data Utility
-  = FontSize Identifier Size Size
+  = BackgroundColor Identifier ColorName
+  | FontSize Identifier Size Size
   | FontWeight Identifier Weight
   | Padding Identifier Size
   | WordBreak
 
 generate :: Utility -> Array GeneratedUtility
+generate (BackgroundColor identifier color) =
+  [ { properties:
+        Just
+          [ { name: "background-color", value: color }
+          ]
+    , identifier: [ "bg" ] <> identifier
+    }
+  ]
+
 generate (FontSize identifier fontSize lineHeight) =
   [ { properties:
         Just

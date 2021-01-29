@@ -14,7 +14,11 @@ testModule =
   { path: [ "Css", "Theme" ]
   , utilities:
       join
-        [ generate (FontSize [ "xs" ] "0.75rem" "1rem")
+        [ generate (BackgroundColor [ "transparent" ] "transparent")
+        , generate (BackgroundColor [ "white" ] "#fff")
+        , generate (BackgroundColor [ "gray", "50" ] "#f9fafb")
+        , generate (BackgroundColor [ "gray", "100" ] "#f3f4f6")
+        , generate (FontSize [ "xs" ] "0.75rem" "1rem")
         , generate (FontSize [ "sm" ] "0.875rem" "1.25rem")
         , generate (FontSize [ "base" ] "1rem" "1.5rem")
         , generate (FontWeight [ "thin" ] "100")
