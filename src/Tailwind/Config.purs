@@ -19,15 +19,19 @@ import Node.Path (FilePath, resolve)
 import Node.Process as Process
 
 type TailwindConfig
-  = { important :: Boolean
+  = { corePlugins :: Array String
+    , important :: Boolean
     , separator :: String
     , theme :: Theme
     }
 
 type Theme
-  = { screens :: Object String
+  = { backgroundColor :: Object Color
     , colors :: Object Color
+    , fontWeight :: Object String
     , fontSize :: Object (Tuple String { lineHeight :: String })
+    , padding :: Object String
+    , screens :: Object String
     }
 
 data Color
@@ -66,20 +70,24 @@ themeCodec :: JA.JsonCodec Theme
 themeCodec =
   JA.object "Theme"
     $ JAR.record
-        { screens: dictionaryDecoder' JA.string
+        { backgroundColor: dictionaryDecoder' colorCodec
         , colors: dictionaryDecoder' colorCodec
+        , fontWeight: dictionaryDecoder' JA.string
         , fontSize:
             dictionaryDecoder'
               $ JA.tuple
                   JA.string
                   (JA.object "second argument" $ JAR.record { lineHeight: JA.string })
+        , padding: dictionaryDecoder' JA.string
+        , screens: dictionaryDecoder' JA.string
         }
 
 configCodec :: JA.JsonCodec TailwindConfig
 configCodec =
   JA.object "Root"
     $ JAR.record
-        { important: JA.boolean
+        { corePlugins: JA.array JA.string
+        , important: JA.boolean
         , separator: JA.string
         , theme: themeCodec
         }
