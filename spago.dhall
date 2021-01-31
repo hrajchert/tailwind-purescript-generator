@@ -4,7 +4,17 @@ You can edit this file as you like.
 -}
 { name = "my-project"
 , dependencies =
-  [ "aff", "console", "effect", "maybe", "node-fs-aff", "psci-support" ]
+  [ "aff"
+  , "argonaut"
+  , "codec-argonaut"
+  , "console"
+  , "debug"
+  , "effect"
+  , "maybe"
+  , "node-fs-aff"
+  , "node-process"
+  , "psci-support"
+  ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }

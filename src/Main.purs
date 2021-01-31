@@ -2,12 +2,15 @@ module Main where
 
 import Prelude
 import Data.Either (Either(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (message, runAff_)
+import Effect.Class (liftEffect)
 import Effect.Console as Console
 import Generator (Module, writeModule)
 import Node.Path (FilePath)
 import Tailwind (Utility(..), generate)
+import Tailwind.Config (resolveConfig)
 
 testModule :: Module
 testModule =
@@ -34,7 +37,13 @@ outputDir :: FilePath
 outputDir = "./generated/"
 
 main :: Effect Unit
-main = runAff_ processResult $ writeModule outputDir testModule
+main =
+  runAff_ processResult
+    $ do
+        void $ liftEffect
+          $ spy "tailWind config"
+          <$> resolveConfig "./tailwind-default-config.js"
+        writeModule outputDir testModule
   where
   processResult = case _ of
     Left err -> Console.log $ "There was a problem: " <> message err
