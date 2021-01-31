@@ -1,11 +1,11 @@
 module Identifiers where
 
 import Prelude
+import Data.Array (uncons)
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe(..))
-import Data.String (Pattern(..), split)
+import Data.String (Pattern(..), Replacement(..), replace, split)
 import Utils.String (capitalize)
-import Data.Array (uncons)
 
 type Identifier
   = Array String
@@ -24,3 +24,7 @@ toCamelCase parts =
     $ case uncons parts of
         Nothing -> [] {- This should never happen, but maybe refactor to NonEmptyArray -}
         Just { head, tail } -> [ head ] <> (capitalize <$> tail)
+
+-- TODO: See what else we need to replace and how to do multi-replacement
+escape :: String -> String
+escape = replace (Pattern ".") (Replacement "_")

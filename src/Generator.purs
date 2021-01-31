@@ -7,7 +7,7 @@ import Data.Maybe (Maybe)
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Identifiers (Identifier, toCamelCase, toKebabCase)
+import Identifiers (Identifier, escape, toCamelCase, toKebabCase)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
@@ -48,7 +48,7 @@ toPurescriptFile mod = intercalate "\n" (moduleComment <> header <> utilities)
     let
       selector = toKebabCase identifier
 
-      name = toCamelCase identifier
+      name = toCamelCase $ escape <$> identifier
     in
       [ asComment $ prettyPrint selector properties
       , name <> " :: ClassName"

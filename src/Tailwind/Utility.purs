@@ -2,8 +2,11 @@ module Tailwind.Utility where
 
 import Prelude
 import Data.Maybe (Maybe(..))
+import Data.Tuple (fst, snd)
+import Foreign.Object (toArrayWithKey)
 import Generator (GeneratedUtility)
 import Identifiers (Identifier, toKebabCase)
+import Tailwind.Config (Color(..), TailwindConfig)
 
 type PropertyName
   = String
@@ -35,6 +38,39 @@ data Utility
   | FontWeight Identifier Weight
   | Padding Identifier Size
   | WordBreak
+
+getUtilities :: TailwindConfig -> Array Utility
+getUtilities config =
+  join
+    [ backgroundColor
+    , fontSize
+    , fontWeight
+    , padding
+    , wordBreak
+    ]
+  where
+  backgroundColor =
+    join
+      ( config.theme.backgroundColor
+          # toArrayWithKey \id colorOpts -> case colorOpts of
+              SingleColor color -> [ BackgroundColor [ id ] color ]
+              (ColorScale colors) -> toArrayWithKey (\variant color -> BackgroundColor [ id, variant ] color) colors
+      )
+
+  fontSize =
+    config.theme.fontSize
+      # toArrayWithKey \id sizeOpts ->
+          FontSize [ id ] (fst sizeOpts) (_.lineHeight $ snd sizeOpts)
+
+  fontWeight =
+    config.theme.fontWeight
+      # toArrayWithKey \id size ->
+          FontWeight [ id ] size
+
+  padding = config.theme.padding # toArrayWithKey \id size -> Padding [ id ] size
+
+  -- TODO: check in corePlugins if we need to use wordBreak. This applies for all plugins
+  wordBreak = [ WordBreak ]
 
 generate :: Utility -> Array GeneratedUtility
 generate (BackgroundColor identifier color) =

@@ -2,7 +2,6 @@ module Main where
 
 import Prelude
 import Data.Either (Either(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (message, runAff_)
 import Effect.Class (liftEffect)
@@ -10,7 +9,7 @@ import Effect.Console as Console
 import Generator (GeneratedModule, writeModule)
 import Node.Path (FilePath)
 import Tailwind.Config (resolveConfig)
-import Tailwind.Utility (Utility(..), generate)
+import Tailwind.Utility (Utility(..), generate, getUtilities)
 
 testUtilities :: Array Utility
 testUtilities =
@@ -42,10 +41,8 @@ main :: Effect Unit
 main =
   runAff_ processResult
     $ do
-        void $ liftEffect
-          $ spy "tailWind config"
-          <$> resolveConfig "./tailwind-default-config.js"
-        writeModule outputDir $ generateModule [ "Css", "Theme" ] testUtilities
+        config <- liftEffect $ resolveConfig "./tailwind-default-config.js"
+        writeModule outputDir $ generateModule [ "Css", "Theme" ] $ getUtilities config
   where
   processResult = case _ of
     Left err -> Console.log $ "There was a problem: " <> message err
