@@ -1,4 +1,4 @@
-module Tailwind where
+module Tailwind.Utility where
 
 import Prelude
 import Data.Maybe (Maybe(..))

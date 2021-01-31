@@ -7,12 +7,12 @@ import Effect (Effect)
 import Effect.Aff (message, runAff_)
 import Effect.Class (liftEffect)
 import Effect.Console as Console
-import Generator (Module, writeModule)
+import Generator (GeneratedModule, writeModule)
 import Node.Path (FilePath)
-import Tailwind (Utility(..), generate)
+import Tailwind.Utility (Utility(..), generate)
 import Tailwind.Config (resolveConfig)
 
-testModule :: Module
+testModule :: GeneratedModule
 testModule =
   { path: [ "Css", "Theme" ]
   , utilities:

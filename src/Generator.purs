@@ -20,12 +20,12 @@ type GeneratedUtility
     , identifier :: Identifier
     }
 
-type Module
+type GeneratedModule
   = { path :: Array String
     , utilities :: Array GeneratedUtility
     }
 
-toPurescriptFile :: Module -> String
+toPurescriptFile :: GeneratedModule -> String
 toPurescriptFile mod = intercalate "\n" (moduleComment <> header <> utilities)
   where
   modulePath = intercalate "." mod.path
@@ -57,7 +57,7 @@ toPurescriptFile mod = intercalate "\n" (moduleComment <> header <> utilities)
 
   asComment description = "\n-- | " <> replaceAll (Pattern "\n") (Replacement "\n-- | ") description
 
-writeModule :: FilePath -> Module -> Aff Unit
+writeModule :: FilePath -> GeneratedModule -> Aff Unit
 writeModule basePath mod = do
   contents <- liftEffect $ Buffer.fromString (toPurescriptFile mod) UTF8
   let
