@@ -1,8 +1,9 @@
 {
-  "name": "tailwind-purescript-generator",
-  "version": "0.0.0",
+  "name": "tailwind-generator",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "bin": "./tailwind-generator.js",
   "scripts": {
     "generate": "postcss static/css/styles.css -o generated/css/styles.css",
     "test": "spago test"

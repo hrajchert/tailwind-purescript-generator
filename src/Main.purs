@@ -1,32 +1,15 @@
 module Main where
 
 import Prelude
+import CommandLineOptions (parseCommandLineOptions)
 import Data.Either (Either(..))
 import Effect (Effect)
 import Effect.Aff (message, runAff_)
 import Effect.Class (liftEffect)
 import Effect.Console as Console
 import Generator (GeneratedModule, writeModule)
-import Node.Path (FilePath)
 import Tailwind.Config (resolveConfig)
-import Tailwind.Utility (Utility(..), generate, getUtilities)
-
-testUtilities :: Array Utility
-testUtilities =
-  [ (BackgroundColor [ "transparent" ] "transparent")
-  , (BackgroundColor [ "white" ] "#fff")
-  , (BackgroundColor [ "gray", "50" ] "#f9fafb")
-  , (BackgroundColor [ "gray", "100" ] "#f3f4f6")
-  , (FontSize [ "xs" ] "0.75rem" "1rem")
-  , (FontSize [ "sm" ] "0.875rem" "1.25rem")
-  , (FontSize [ "base" ] "1rem" "1.5rem")
-  , (FontWeight [ "thin" ] "100")
-  , (FontWeight [ "extralight" ] "200")
-  , (FontWeight [ "light" ] "300")
-  , (Padding [ "0" ] "0px")
-  , (Padding [ "1" ] "0.25rem")
-  , WordBreak
-  ]
+import Tailwind.Utility (Utility, generate, getUtilities)
 
 generateModule :: Array String -> Array Utility -> GeneratedModule
 generateModule path utilityList =
@@ -34,15 +17,13 @@ generateModule path utilityList =
   , utilities: generate =<< utilityList
   }
 
-outputDir :: FilePath
-outputDir = "./generated/"
-
 main :: Effect Unit
 main =
   runAff_ processResult
     $ do
-        config <- liftEffect $ resolveConfig "./tailwind-default-config.js"
-        writeModule outputDir $ generateModule [ "Css", "Theme" ] $ getUtilities config
+        commandLineOpts <- liftEffect $ parseCommandLineOptions
+        config <- liftEffect $ resolveConfig commandLineOpts.tailwindConfig
+        writeModule commandLineOpts.outputDir $ generateModule [ "Css", "Theme" ] $ getUtilities config
   where
   processResult = case _ of
     Left err -> Console.log $ "There was a problem: " <> message err

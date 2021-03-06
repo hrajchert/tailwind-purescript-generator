@@ -13,6 +13,7 @@ You can edit this file as you like.
   , "maybe"
   , "node-fs-aff"
   , "node-process"
+  , "optparse"
   , "psci-support"
   ]
 , packages = ./packages.dhall
