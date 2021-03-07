@@ -11,6 +11,7 @@ You can edit this file as you like.
   , "debug"
   , "effect"
   , "maybe"
+  , "monad-logger"
   , "node-fs-aff"
   , "node-process"
   , "optparse"

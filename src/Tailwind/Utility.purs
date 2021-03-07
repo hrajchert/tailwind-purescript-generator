@@ -1,9 +1,13 @@
 module Tailwind.Utility where
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Control.Monad.Logger.Class (class MonadLogger, warn)
+import Data.Log.Tag (empty)
+import Data.Maybe (Maybe(..), maybe')
+import Data.Traversable (for)
 import Data.Tuple (fst, snd)
-import Foreign.Object (toArrayWithKey)
+import Foreign.Object (Object, toArrayWithKey)
+import Foreign.Object as Object
 import Generator (GeneratedUtility)
 import Identifiers (Identifier, toKebabCase)
 import Tailwind.Config (Color(..), TailwindConfig)
@@ -39,16 +43,26 @@ data Utility
   | Padding Identifier Size
   | WordBreak
 
-getUtilities :: TailwindConfig -> Array Utility
-getUtilities config =
-  join
-    [ backgroundColor
-    , fontSize
-    , fontWeight
-    , padding
-    , wordBreak
-    ]
+getUtilities :: forall m. MonadLogger m => TailwindConfig -> m (Array Utility)
+getUtilities config = do
+  (enabledUtilities :: Array (Array Utility)) <-
+    for config.corePlugins \plugin ->
+      maybe'
+        (\_ -> warn empty ("missing plugin " <> plugin) $> [])
+        pure
+        (Object.lookup plugin allPlugins)
+  pure $ join $ enabledUtilities
   where
+  allPlugins :: Object (Array Utility)
+  allPlugins =
+    Object.fromHomogeneous
+      { backgroundColor
+      , fontSize
+      , fontWeight
+      , padding
+      , wordBreak
+      }
+
   backgroundColor =
     join
       ( config.theme.backgroundColor
