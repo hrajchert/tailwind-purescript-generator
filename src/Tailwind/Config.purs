@@ -5,10 +5,11 @@ import Argonaut.CodecExtra (customDecoder, dictionaryDecoder')
 import Control.Alt ((<|>))
 import Data.Argonaut as A
 import Data.Argonaut.Core (Json)
-import Data.Codec.Argonaut (printJsonDecodeError)
+import Data.Codec.Argonaut (printJsonDecodeError, prismaticCodec)
 import Data.Codec.Argonaut.Common as JA
 import Data.Codec.Argonaut.Record as JAR
 import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple)
 import Effect (Effect)
@@ -23,6 +24,7 @@ type TailwindConfig
     , important :: Boolean
     , separator :: String
     , theme :: Theme
+    , variants :: Variants
     }
 
 configCodec :: JA.JsonCodec TailwindConfig
@@ -33,6 +35,7 @@ configCodec =
         , important: JA.boolean
         , separator: JA.string
         , theme: themeCodec
+        , variants: variantsCodec
         }
 
 type Theme
@@ -59,6 +62,72 @@ themeCodec =
         , padding: dictionaryDecoder' JA.string
         , screens: dictionaryDecoder' JA.string
         }
+
+data Variant
+  = First
+  | Last
+  | Odd
+  | Even
+  | Visited
+  | Checked
+  | GroupHover
+  | GroupFocus
+  | FocusWithin
+  | Hover
+  | Focus
+  | FocusVisible
+  | Active
+  | Disabled
+  | Dark
+  | Responsive
+
+variantToString :: Variant -> String
+variantToString = case _ of
+  First -> "first"
+  Last -> "last"
+  Odd -> "odd"
+  Even -> "even"
+  Visited -> "visited"
+  Checked -> "checked"
+  GroupHover -> "group-hover"
+  GroupFocus -> "group-focus"
+  FocusWithin -> "focus-within"
+  Hover -> "hover"
+  Focus -> "focus"
+  FocusVisible -> "focus-visible"
+  Active -> "active"
+  Disabled -> "disabled"
+  Dark -> "dark"
+  Responsive -> "responsive"
+
+variantFromString :: String -> Maybe Variant
+variantFromString = case _ of
+  "first" -> Just First
+  "last" -> Just Last
+  "odd" -> Just Odd
+  "even" -> Just Even
+  "visited" -> Just Visited
+  "checked" -> Just Checked
+  "group-hover" -> Just GroupHover
+  "group-focus" -> Just GroupFocus
+  "focus-within" -> Just FocusWithin
+  "hover" -> Just Hover
+  "focus" -> Just Focus
+  "focus-visible" -> Just FocusVisible
+  "active" -> Just Active
+  "disabled" -> Just Disabled
+  "dark" -> Just Dark
+  "responsive" -> Just Responsive
+  _ -> Nothing
+
+variantCodec :: JA.JsonCodec Variant
+variantCodec = prismaticCodec variantFromString variantToString JA.string
+
+type Variants
+  = Object (Array Variant)
+
+variantsCodec :: JA.JsonCodec Variants
+variantsCodec = dictionaryDecoder' $ JA.array variantCodec
 
 data Color
   -- Single color is just a single color, like "#000" or "transparent"
