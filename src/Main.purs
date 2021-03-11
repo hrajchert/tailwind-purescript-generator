@@ -31,7 +31,9 @@ main =
   program = do
     commandLineOpts <- liftEffect $ parseCommandLineOptions
     config <- liftEffect $ resolveConfig commandLineOpts.tailwindConfig
-    utilities <- getUtilities config
+    utilityDescription <- getUtilities config
+    let
+      utilities = join $ _.utilities <$> utilityDescription
     liftAff $ writeModule commandLineOpts.outputDir $ generateModule [ "Css", "Theme" ] $ utilities
 
   processResult = case _ of

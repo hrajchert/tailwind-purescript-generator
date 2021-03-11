@@ -2,15 +2,16 @@ module Tailwind.Utility where
 
 import Prelude
 import Control.Monad.Logger.Class (class MonadLogger, warn)
+import Data.Array (catMaybes)
 import Data.Log.Tag (empty)
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), fromMaybe, maybe')
 import Data.Traversable (for)
 import Data.Tuple (fst, snd)
 import Foreign.Object (Object, toArrayWithKey)
 import Foreign.Object as Object
 import Generator (GeneratedUtility)
 import Identifiers (Identifier, toKebabCase)
-import Tailwind.Config (Color(..), TailwindConfig)
+import Tailwind.Config (Color(..), TailwindConfig, Variant)
 
 type PropertyName
   = String
@@ -43,17 +44,23 @@ data Utility
   | Padding Identifier Size
   | WordBreak
 
-getUtilities :: forall m. MonadLogger m => TailwindConfig -> m (Array Utility)
+type UtilityDescriptor
+  = { name :: String
+    , utilities :: Array Utility
+    , variants :: Array Variant
+    }
+
+getUtilities :: forall m. MonadLogger m => TailwindConfig -> m (Array UtilityDescriptor)
 getUtilities config = do
-  (enabledUtilities :: Array (Array Utility)) <-
-    for config.corePlugins \plugin ->
-      maybe'
-        (\_ -> warn empty ("missing plugin " <> plugin) $> [])
-        pure
-        (Object.lookup plugin allPlugins)
-  pure $ join $ enabledUtilities
+  (enabledUtilities :: Array (Maybe UtilityDescriptor)) <-
+    for config.corePlugins \plugin -> case Object.lookup plugin allPlugins of
+      Nothing -> do
+        warn empty ("missing plugin " <> plugin)
+        pure Nothing
+      Just definition -> pure $ Just definition
+  pure $ catMaybes $ enabledUtilities
   where
-  allPlugins :: Object (Array Utility)
+  allPlugins :: Object UtilityDescriptor
   allPlugins =
     Object.fromHomogeneous
       { backgroundColor
@@ -63,28 +70,54 @@ getUtilities config = do
       , wordBreak
       }
 
+  getVariants name = fromMaybe [] $ Object.lookup name config.variants
+
   backgroundColor =
-    join
-      ( config.theme.backgroundColor
-          # toArrayWithKey \id colorOpts -> case colorOpts of
-              SingleColor color -> [ BackgroundColor [ id ] color ]
-              (ColorScale colors) -> toArrayWithKey (\variant color -> BackgroundColor [ id, variant ] color) colors
-      )
+    { name: "backgroundColor"
+    , utilities:
+        join
+          ( config.theme.backgroundColor
+              # toArrayWithKey \id colorOpts -> case colorOpts of
+                  SingleColor color -> [ BackgroundColor [ id ] color ]
+                  (ColorScale colors) -> toArrayWithKey (\variant color -> BackgroundColor [ id, variant ] color) colors
+          )
+    , variants: getVariants "backgroundColor"
+    }
 
   fontSize =
-    config.theme.fontSize
-      # toArrayWithKey \id sizeOpts ->
-          FontSize [ id ] (fst sizeOpts) (_.lineHeight $ snd sizeOpts)
+    { name: "fontSize"
+    , utilities:
+        config.theme.fontSize
+          # toArrayWithKey \id sizeOpts ->
+              FontSize [ id ] (fst sizeOpts) (_.lineHeight $ snd sizeOpts)
+    , variants: getVariants "fontSize"
+    }
 
   fontWeight =
-    config.theme.fontWeight
-      # toArrayWithKey \id size ->
-          FontWeight [ id ] size
+    { name: "fontWeight"
+    , utilities:
+        config.theme.fontWeight
+          # toArrayWithKey \id size ->
+              FontWeight [ id ] size
+    , variants: getVariants "fontWeight"
+    }
 
-  padding = config.theme.padding # toArrayWithKey \id size -> Padding [ id ] size
+  padding =
+    { name: "padding"
+    , utilities:
+        config.theme.padding
+          # toArrayWithKey \id size ->
+              Padding [ id ] size
+    , variants: getVariants "padding"
+    }
 
   -- TODO: check in corePlugins if we need to use wordBreak. This applies for all plugins
-  wordBreak = [ WordBreak ]
+  wordBreak =
+    { name: "wordBreak"
+    , utilities:
+        [ WordBreak ]
+    , variants: getVariants "padding"
+    }
 
 generate :: Utility -> Array GeneratedUtility
 generate (BackgroundColor identifier color) =
@@ -174,7 +207,3 @@ forAllDirections generator =
   , generator "x" [ "left", "right" ]
   , generator "y" [ "top", "bottom" ]
   ]
-
--- data Variant
---   = Responsive
---   | Focus
